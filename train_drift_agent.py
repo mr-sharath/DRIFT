@@ -32,7 +32,7 @@ def graph_to_data(graph):
     return from_networkx(graph)
 
 
-def train(env, model, optimizer, device, num_episodes=500):
+def train(env, model, optimizer, device, num_episodes=10000):
     model.train()
     rewards = []
     for episode in range(num_episodes):

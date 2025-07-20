@@ -1,4 +1,4 @@
-# 🧠 **DRIFT++ System Architecture**
+# 🧠 **DRIFT System Architecture**
 
 > *“An Intelligent Transaction Routing Framework using GNNs and Deep Reinforcement Learning”*
 

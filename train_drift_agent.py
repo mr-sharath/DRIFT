@@ -3,14 +3,9 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import numpy as np
 from drift_env import TransactionRoutingEnv
-import networkx as nx
-import random
 from torch_geometric.nn import GCNConv
 from torch_geometric.utils import from_networkx
-from cleanrl.ppo_continuous import make_env
-from collections import deque
 
 class GNNPolicy(nn.Module):
     def __init__(self, in_channels, hidden_channels, out_channels):

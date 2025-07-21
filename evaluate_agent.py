@@ -1,147 +1,187 @@
-# evaluate_agent.py
+# evaluate_agent.py (Final Robust Version)
 
 import torch
+import torch.nn.functional as F
 import numpy as np
-from drift_env import TransactionRoutingEnv
-from train_drift_agent import GNNPolicy, graph_to_data
-import networkx as nx
-from collections import defaultdict
 import matplotlib.pyplot as plt
-
+from drift_env import TransactionRoutingEnv
+from train_drift_agent2 import GNNPolicy, graph_to_data, mask_invalid_actions
+import random
+import networkx as nx
 
 def evaluate_policy(model, env, device, episodes=100):
     model.eval()
-    stats = defaultdict(list)
+    total_rewards = []
+    success_count = 0
+    step_counts = []
 
-    for ep in range(episodes):
+    for _ in range(episodes):
         obs, _ = env.reset()
         graph_data = graph_to_data(env.graph).to(device)
         current_node = obs['current_node']
         destination = obs['destination']
+
+        episode_reward = 0
+        steps = 0
         done = False
-        ep_reward, steps = 0, 0
 
         while not done:
-            logits = model(graph_data)
-            probs = torch.softmax(logits, dim=0)
-            action_probs = probs[current_node]
-            action = torch.multinomial(action_probs, 1).item()
+            with torch.no_grad():
+                logits = model(graph_data)
+                probs = F.softmax(logits, dim=-1)[current_node]
+                mask = mask_invalid_actions(env.graph, current_node, env.num_nodes).to(device)
+                masked_probs = probs * mask
+
+                if masked_probs.sum().item() <= 1e-6:
+                    # fallback strategy if no valid actions
+                    valid_neighbors = [nbr for nbr in env.graph.neighbors(current_node)
+                                       if not env.graph[current_node][nbr].get("regulatory_blocked", False)]
+                    action = random.choice(valid_neighbors) if valid_neighbors else random.randint(0, env.num_nodes - 1)
+                else:
+                    masked_probs /= masked_probs.sum()
+                    action = torch.multinomial(masked_probs, 1).item()
 
             obs, reward, term, trunc, _ = env.step(action)
             current_node = obs['current_node']
-            ep_reward += reward
+            episode_reward += reward
             steps += 1
             done = term or trunc
 
-        stats['gnn_reward'].append(ep_reward)
-        stats['gnn_success'].append(current_node == destination)
-        stats['gnn_steps'].append(steps)
+        total_rewards.append(episode_reward)
+        step_counts.append(steps)
+        if obs['current_node'] == obs['destination']:
+            success_count += 1
 
-    return stats
-
+    return {
+        "avg_reward": np.mean(total_rewards),
+        "success_rate": success_count / episodes,
+        "avg_steps": np.mean(step_counts)
+    }
 
 def evaluate_random(env, episodes=100):
-    stats = defaultdict(list)
-    for ep in range(episodes):
+    total_rewards = []
+    success_count = 0
+    step_counts = []
+
+    for _ in range(episodes):
         obs, _ = env.reset()
         current_node = obs['current_node']
         destination = obs['destination']
+
+        episode_reward = 0
+        steps = 0
         done = False
-        ep_reward, steps = 0, 0
 
         while not done:
-            action = env.action_space.sample()
+            neighbors = list(env.graph.neighbors(current_node))
+            if not neighbors:
+                action = random.randint(0, env.num_nodes - 1)
+            else:
+                action = random.choice(neighbors)
             obs, reward, term, trunc, _ = env.step(action)
             current_node = obs['current_node']
-            ep_reward += reward
+            episode_reward += reward
             steps += 1
             done = term or trunc
 
-        stats['rand_reward'].append(ep_reward)
-        stats['rand_success'].append(current_node == destination)
-        stats['rand_steps'].append(steps)
+        total_rewards.append(episode_reward)
+        step_counts.append(steps)
+        if obs['current_node'] == obs['destination']:
+            success_count += 1
 
-    return stats
-
+    return {
+        "avg_reward": np.mean(total_rewards),
+        "success_rate": success_count / episodes,
+        "avg_steps": np.mean(step_counts)
+    }
 
 def evaluate_dijkstra(env, episodes=100):
-    stats = defaultdict(list)
-    for ep in range(episodes):
-        obs, _ = env.reset()
-        G = env.graph.copy()
-        source, destination = obs['current_node'], obs['destination']
-        for u, v in list(G.edges()):
-            if G[u][v].get("regulatory_blocked", False):
-                G.remove_edge(u, v)
+    total_rewards = []
+    success_count = 0
+    step_counts = []
 
-        success = False
+    for _ in range(episodes):
+        obs, _ = env.reset()
+        source = obs['current_node']
+        destination = obs['destination']
+        G = env.graph.copy()
+
+        # remove regulatory-blocked edges
+        edges_to_remove = [(u, v) for u, v, d in G.edges(data=True) if d.get("regulatory_blocked", False)]
+        G.remove_edges_from(edges_to_remove)
+
         try:
             path = nx.shortest_path(G, source=source, target=destination, weight='fee')
-            total_fee = sum(G[path[i]][path[i+1]]['fee'] for i in range(len(path)-1))
-            steps = len(path) - 1
-            reward = 5.0 - total_fee
-            success = True
-        except (nx.NetworkXNoPath, nx.NodeNotFound):
-            reward = -5.0
-            steps = 0
+            episode_reward = 0
+            for i in range(len(path) - 1):
+                obs, reward, term, trunc, _ = env.step(path[i+1])
+                episode_reward += reward
+                if term or trunc:
+                    break
+            total_rewards.append(episode_reward)
+            step_counts.append(len(path) - 1)
+            if obs['current_node'] == obs['destination']:
+                success_count += 1
+        except nx.NetworkXNoPath:
+            total_rewards.append(-10)
+            step_counts.append(env.max_steps)
 
-        stats['dijkstra_reward'].append(reward)
-        stats['dijkstra_success'].append(success)
-        stats['dijkstra_steps'].append(steps)
+    return {
+        "avg_reward": np.mean(total_rewards),
+        "success_rate": success_count / episodes,
+        "avg_steps": np.mean(step_counts)
+    }
 
-    return stats
+def plot_metrics(results):
+    labels = list(results.keys())
+    avg_rewards = [results[k]['avg_reward'] for k in labels]
+    success_rates = [results[k]['success_rate'] for k in labels]
+    avg_steps = [results[k]['avg_steps'] for k in labels]
 
+    x = np.arange(len(labels))
+    width = 0.25
 
-def plot_metrics(gnn_stats, rand_stats, dijkstra_stats):
-    plt.figure(figsize=(12, 4))
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.bar(x - width, avg_rewards, width, label='Avg Reward')
+    ax.bar(x, success_rates, width, label='Success Rate')
+    ax.bar(x + width, avg_steps, width, label='Avg Steps')
 
-    plt.subplot(1, 3, 1)
-    plt.title("Avg Reward")
-    plt.bar(["GNN", "Random", "Dijkstra"], [
-        np.mean(gnn_stats['gnn_reward']),
-        np.mean(rand_stats['rand_reward']),
-        np.mean(dijkstra_stats['dijkstra_reward'])
-    ])
-
-    plt.subplot(1, 3, 2)
-    plt.title("Success Rate")
-    plt.bar(["GNN", "Random", "Dijkstra"], [
-        np.mean(gnn_stats['gnn_success']),
-        np.mean(rand_stats['rand_success']),
-        np.mean(dijkstra_stats['dijkstra_success'])
-    ])
-
-    plt.subplot(1, 3, 3)
-    plt.title("Avg Steps")
-    plt.bar(["GNN", "Random", "Dijkstra"], [
-        np.mean(gnn_stats['gnn_steps']),
-        np.mean(rand_stats['rand_steps']),
-        np.mean(dijkstra_stats['dijkstra_steps'])
-    ])
+    ax.set_ylabel('Scores')
+    ax.set_title('Evaluation Metrics by Agent')
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.legend()
 
     plt.tight_layout()
-    plt.savefig("eval_comparison.png")
+    plt.savefig("eval_comparison3.png")
+    print("✅ Saved evaluation plot as eval_comparison3.png")
     plt.show()
-
 
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     env = TransactionRoutingEnv()
 
-    model = GNNPolicy(in_channels=2, hidden_channels=32, out_channels=env.num_nodes)
-    model.load_state_dict(torch.load("drift_policy.pt", map_location=device))
-    model.to(device)
-
     print("Evaluating GNN policy...")
+    model = GNNPolicy(in_channels=1, hidden_channels=32, out_channels=env.num_nodes).to(device)
+    model.load_state_dict(torch.load("drift_policy.pt", map_location=device))
     gnn_stats = evaluate_policy(model, env, device, episodes=100)
 
-    print("Evaluating random agent...")
-    rand_stats = evaluate_random(env, episodes=100)
+    print("Evaluating random policy...")
+    random_stats = evaluate_random(env, episodes=100)
 
-    print("Evaluating Dijkstra baseline...")
+    print("Evaluating dijkstra policy...")
     dijkstra_stats = evaluate_dijkstra(env, episodes=100)
 
-    plot_metrics(gnn_stats, rand_stats, dijkstra_stats)
+    results = {
+        "GNN Agent": gnn_stats,
+        "Random Agent": random_stats,
+        "Dijkstra Agent": dijkstra_stats
+    }
+
+    for agent, stats in results.items():
+        print(f"{agent}:\n  Avg Reward: {stats['avg_reward']:.2f}\n  Success Rate: {stats['success_rate']:.2f}\n  Avg Steps: {stats['avg_steps']:.2f}\n")
+
+    plot_metrics(results)
 
 if __name__ == '__main__':
     main()

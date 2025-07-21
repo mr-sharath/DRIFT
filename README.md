@@ -1,132 +1,167 @@
-# 🧠 **DRIFT System Architecture**
+# 🚀 DRIFT: Deep Reinforcement Intelligent Financial Transaction Routing
 
-> *“An Intelligent Transaction Routing Framework using GNNs and Deep Reinforcement Learning”*
-
----
-
-## 🔁 0. Motivation
-
-Traditional transaction routing (e.g., in banking, telecom, blockchain) is:
-
-* **Rule-based** (e.g., round robin, FIFO)
-* **Hard-coded thresholds**
-* **Fails under dynamic or high-load conditions**
-
-What if we had a **learned agent** that:
-
-* Understands the **graph structure** (banks/nodes, transaction limits),
-* Adapts routing based on **latency, cost, risk**,
-* Learns through simulation using **deep RL** and **graph encoding**?
-
-That’s what we’ll build.
+**Author:** Sharath
+**Domain:** Reinforcement Learning (RL), Graph Neural Networks (GNNs), Financial Networks
+**Goal:** Surpass traditional routing algorithms (like Dijkstra) using DRL in financial networks, while pushing production-grade innovation and skill showcase.
 
 ---
 
-## 🧱 1. System Overview
+## 🧠 Business Problem & Motivation
+
+In modern financial systems like **payment channels (e.g., Lightning Network)** or **interbank settlements**, intelligently routing a transaction across a dynamic graph of counterparties is a foundational challenge. Factors like channel capacity, latency, regulation, and risk profiles mean shortest-path algorithms like **Dijkstra** are insufficient.
+
+**Pain Point:**
+Traditional path-finding (e.g., Dijkstra, Bellman-Ford) does not adapt to *dynamic*, *partially observable*, or *blocked* routes in real-time systems. They also **do not learn** from failure cases, leading to inefficient or failed transaction attempts.
+
+**Industry Need:**
+A routing mechanism that **learns from experience**, **adapts to dynamic edge properties**, and **considers non-obvious strategies** is highly valuable in decentralized and regulated transaction environments.
+
+---
+
+## 💡 Our Approach
+
+We designed **DRIFT** — a multi-phase research-driven RL framework for **intelligent financial transaction routing** using **Graph Neural Networks (GNNs)** and **Reinforcement Learning (RL)**. Each phase builds upon the previous, pushing toward real-world deployment readiness.
+
+---
+
+## 🧩 Phases Breakdown
+
+### ### Phase 1: Baseline GNN Agent
+
+**Script:** `train_drift_agent1.py`
+**Method:** GNN with supervised pretraining on Dijkstra paths
+**Architecture:**
+
+* GNN using `SAGEConv` (node features only)
+* Prediction: next hop from current node to destination
+* Loss: Cross-entropy over valid neighbors (Dijkstra label supervision)
+
+**Motivation:** Understand if GNNs alone can mimic deterministic routing strategies.
+
+**Result Highlights:**
+✅ GNN outperformed **Random**
+❌ Still behind **Dijkstra**
+📈 Reward: \~5.0 vs Dijkstra's 5.8
+📉 Avg Steps: 7.4 (GNN) vs 2.3 (Dijkstra)
+
+📊 ![Phase 1](eval_comparison1.png)
+
+---
+
+### ### Phase 2: Reinforcement Learning GNN Agent
+
+**Script:** `train_drift_agent2.py`
+**Method:** Policy Gradient RL with node features only
+**Architecture:**
+
+* GNN + Softmax policy over neighbors
+* Reward: -1 per step, +10 on success, -10 on fail
+* No explicit Dijkstra supervision
+
+**Motivation:** Let the model learn optimal routing via trial-and-error without fixed path bias.
+
+**Result Highlights:**
+✅ Better reward than Random again
+❌ Still behind Dijkstra on steps and success
+❗ Reward plateaued; learning signal weak due to sparse reward
+📉 Success: \~50% vs Dijkstra’s 100%
+
+📊 ![Phase 2](eval_comparison2.png)
+
+---
+
+### ### Phase 3: Actor-Critic GNN Agent with Advantage Learning
+
+**Script:** `train_drift_agent3.py`
+**Method:** Advantage Actor-Critic (A2C) with GNN
+**Architecture:**
+
+* Shared GNN backbone
+* Two heads: `Actor` (policy logits) + `Critic` (value estimate)
+* Advantage = return − value
+* Stable training using masked categorical distribution
+* Explored adaptive node features and gradient normalization
+
+**Motivation:** Improve learning stability and policy precision under sparse feedback and dynamic transitions.
+
+**Result Highlights:**
+✅ Reward improved consistently
+✅ Learning stabilized with advantage normalization
+❌ Still behind Dijkstra, but outperforming GNN + Random
+📈 Reward: \~4.8 (vs 4.5 Random, 5.7 Dijkstra)
+📉 Steps: \~7.6 vs 6.7 (Random), 2.3 (Dijkstra)
+
+📊 ![Phase 3](eval_actorcritic_vs_others.png)
+
+---
+
+## 🛠️ Tech Stack
+
+| Component         | Tools / Libraries                       |
+| ----------------- | --------------------------------------- |
+| RL Algorithms     | Policy Gradient, Actor-Critic (PyTorch) |
+| Graph Learning    | `torch-geometric`, `SAGEConv`           |
+| Visualization     | `matplotlib`, `tensorboard`             |
+| Environment       | Custom `TransactionRoutingEnv`          |
+| Evaluation Agents | Dijkstra, Random, GNN RL Agents         |
+| Platform          | Python 3.11+, PyTorch 2.5+, MacOS (M1)  |
+
+---
+
+## 📊 Evaluation Strategy
+
+We compare agents on 3 key metrics over 100 episodes:
+
+* **Average Reward**: higher = better policy performance
+* **Success Rate**: fraction of transactions successfully routed
+* **Average Steps**: lower = more efficient path
+
+Agents:
+
+* `Random`: naive baseline
+* `Dijkstra`: fixed benchmark
+* `GNN`, `Actor-Critic`: learning agents
+
+---
+
+## 📂 File Structure
 
 ```
-graph TD
-    T[Transaction Generator] --> E[Graph Environment]
-    E -->|State s_t| A[Graph Encoder (GNN)]
-    A --> P[RL Policy (DRL Agent)]
-    P -->|Action a_t| E
-    E -->|Reward + New State| P
-    P -->|Learned weights| I[Inference Engine]
-    I -->|API Request| B[Fastify Backend]
-    B -->|WebSocket| F[Interactive Frontend]
+DRIFT/
+├── drift_env.py               # Custom routing environment
+├── train_drift_agent1.py      # GNN supervised trainer
+├── train_drift_agent2.py      # GNN RL (policy gradient)
+├── train_drift_agent3.py      # Actor-Critic trainer
+├── evaluate_agent.py          # Benchmark & plot comparison
+├── evaluate_actor_critic.py   # Actor-Critic focused evaluator
+├── graph_simulator.py         # Graph creation utilities
+├── drift_actor_critic.pt      # Final trained model
+├── *.png                      # All evaluation plots
 ```
 
 ---
 
-## 🧩 2. Components (Deep Dive)
+## 🚀 Future Scope
 
-### 🟢 A. **Graph Simulator**
-
-* Simulates a network of banks/agents as a **dynamic graph**: nodes = banks, edges = payment corridors.
-* Nodes have features: capacity, fee, location, etc.
-* Edges have constraints: fee, delay, bandwidth.
-* **`networkx` + synthetic data generator**
-
----
-
-### 🔵 B. **GNN Encoder**
-
-* Learns representations of each node (bank) and edge (transaction rule).
-* Input: graph `G(V,E)` with features
-* Output: embeddings for nodes/edges
-* Architecture:
-
-  * `Graphormer`, `GIN`, or `GraphSAGE`
-  * Implemented in `PyTorch Geometric`
+1. **Hierarchical RL:** Split path planning and local routing into sub-agents
+2. **Edge Feature Integration:** Include latency, fee, congestion in edge embeddings
+3. **Curriculum Learning:** Gradually increase complexity of routing tasks
+4. **Transfer Learning:** Pretrain on simpler topologies; fine-tune on real networks
+5. **Multi-Agent Routing:** Simulate concurrent transaction flows and interference
+6. **GANs or GFlowNets:** Explore generative models for alternative path distributions
+7. **Deployment:** Integrate with Lightning Network simulations (e.g., lnd, c-lightning)
 
 ---
 
-### 🟠 C. **DRL Agent**
+##  Conclusion
 
-* Uses policy gradient (PPO or A2C) to select the next routing decision
-* Observes:
+DRIFT demonstrates how **deep learning and graph reasoning** can transform a classical domain like financial routing. While we haven’t yet dethroned Dijkstra on all fronts, we’ve shown consistent improvements across phases, robust training workflows, and strong experimentation.
 
-  * Current graph state `s_t`
-  * Transaction queue
-* Chooses:
+This project is a **technical portfolio piece** that proves capability in:
 
-  * Next hop or action `a_t`
-* Learns:
-
-  * Policy `π(a|s)` using `CleanRL`
-* Reward:
-
-  * Delivery success, cost, speed
-
----
-
-### 🟡 D. **Training Loop**
-
-* Plug GNN encoder into RL policy network
-* Define custom environment using `Gymnasium`
-* Train over thousands of simulated episodes
-* Use `WandB` or `TensorBoard` for metrics
-
----
-
-### 🟣 E. **Inference Module**
-
-* Export trained policy to **ONNX**
-* Run **inference locally** via `onnxruntime`
-* Accept real transaction requests → recommend routing path
-
----
-
-### 🟤 F. **Demo Interface**
-
-* Simple **interactive graph UI** (drag/drop nodes, simulate congestion)
-* Real-time routing visualized
-* Built with:
-
-  * `SvelteKit` + `D3.js` (or simple HTML + JS)
-  * `Fastify` backend with socket or REST
-  * `Firebase` or `GCP Cloud Run` hosting
-
----
-
-## 🧪 3. Research Evaluation Plan
-
-| Metric              | Why It Matters               |
-| ------------------- | ---------------------------- |
-| 🕒 Avg latency      | Measures routing efficiency  |
-| 💰 Transaction cost | Penalizes expensive hops     |
-| ✅ Completion %      | Measures success rate        |
-| 🔄 Generalization   | Evaluate on unseen networks  |
-| 🧠 Ablation Study   | Prove GNN improves RL policy |
-
----
-
-## 🧠 4. What's Novel Here?
-
-* **Combining GNN + RL for end-to-end adaptive routing**
-* **Real-time inference over constrained dynamic networks**
-* **Fully open-source + deployable** (not just academic)
-* **Optimized with user-tuned reward shaping**
-* **Fits smart finance, crypto, and edge network use cases**
+* Designing complex RL systems
+* Working with GNNs in custom environments
+* Debugging real-world ML errors
+* Communicating ML outcomes with integrity
 
 ---

@@ -658,6 +658,21 @@ body {
 .brand-title { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
 .logo-icon { display: flex; align-items: center; justify-content: center; }
 
+.nav-actions {
+    display: flex; align-items: center; gap: 12px;
+}
+
+.nav-github-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--text-main); font-size: 13px; font-weight: 600;
+    text-decoration: none; padding: 6px 12px; border-radius: var(--radius-sm);
+    background: var(--bg-base); border: 1px solid var(--border-subtle);
+    transition: all 0.2s ease;
+}
+.nav-github-btn:hover {
+    background: var(--bg-surface-hover); border-color: var(--brand-primary); color: var(--brand-primary);
+}
+
 .nav-settings-btn {
     background: none; border: none; font-size: 18px; color: var(--text-muted);
     cursor: pointer; padding: 8px; border-radius: var(--radius-sm); transition: all 0.2s ease;

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waynex — Neuro-Symbolic Fleet Intelligence</title>
+    <meta name="description" content="Waynex uses Graph Neural Networks and Deep Reinforcement Learning to compute optimized multi-vehicle fleet routes in sub-50 milliseconds. Compare live against Google OR-Tools.">
+    <meta property="og:title" content="Waynex — Neuro-Symbolic Fleet Intelligence">
+    <meta property="og:description" content="AI-powered logistics routing that rivals Google OR-Tools in milliseconds.">
+    
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet.js Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+
+    <!-- ========================================== -->
+    <!-- TOP NAVIGATION BAR                         -->
+    <!-- ========================================== -->
+    <nav class="top-nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-brand">
+            <div class="logo-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="6" cy="6" r="3" fill="#14b8a6"/>
+                    <circle cx="18" cy="6" r="3" fill="#0f766e"/>
+                    <circle cx="12" cy="18" r="3" fill="#0f766e"/>
+                    <line x1="6" y1="6" x2="18" y2="6" stroke="#14b8a6" stroke-width="1.5"/>
+                    <line x1="18" y1="6" x2="12" y2="18" stroke="#0f766e" stroke-width="1.5"/>
+                    <line x1="12" y1="18" x2="6" y2="6" stroke="#14b8a6" stroke-width="1.5"/>
+                </svg>
+            </div>
+            <span class="brand-title">WAYNEX</span>
+        </div>
+
+        <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="nav-links" id="navLinks">
+            <a class="nav-link active" data-view="view-platform" onclick="switchView('view-platform')" role="button" tabindex="0">
+                <i class="fa-solid fa-cube"></i> Platform
+            </a>
+            <a class="nav-link" data-view="view-dispatch" onclick="switchView('view-dispatch')" role="button" tabindex="0">
+                <i class="fa-solid fa-map-location-dot"></i> Dispatch Center
+            </a>
+            <a class="nav-link" data-view="view-analytics" onclick="switchView('view-analytics')" role="button" tabindex="0">
+                <i class="fa-solid fa-chart-column"></i> Analytics
+            </a>
+        </div>
+
+        <button class="nav-settings-btn" onclick="toggleSettingsModal()" aria-label="Settings">
+            <i class="fa-solid fa-gear"></i>
+        </button>
+    </nav>
+
+    <!-- Settings Modal -->
+    <div class="settings-modal-overlay hidden" id="settingsModal" onclick="closeSettingsModal(event)">
+        <div class="settings-modal">
+            <div class="settings-header">
+                <h3>Settings</h3>
+                <button class="btn-close" onclick="toggleSettingsModal()" aria-label="Close settings"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="settings-body">
+                <label class="settings-label">OpenAI API Key (for AI Copilot)</label>
+                <input type="password" id="apiKeyInput" class="form-input" placeholder="sk-..." onchange="saveApiKey()">
+                <small class="text-muted">Used by the AI Copilot chat feature. Stored locally in your browser only.</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MAIN CONTENT                               -->
+    <!-- ========================================== -->
+    <main class="main-content">
+
+        <!-- ========================================== -->
+        <!-- VIEW 1: PLATFORM (Landing / Homepage)      -->
+        <!-- ========================================== -->
+        <section id="view-platform" class="view-section active">
+            
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <i class="fa-solid fa-bolt"></i> Neuro-Symbolic Routing Engine
+                    </div>
+                    <h1 class="hero-title">Fleet Intelligence,<br>Delivered in Milliseconds</h1>
+                    <p class="hero-subtitle">Waynex combines Graph Neural Networks with Deep Reinforcement Learning to compute highly optimized multi-vehicle fleet routes in under 50ms — rivaling traditional solvers that take seconds.</p>
+                    <div class="hero-actions">
+                        <button class="btn btn-primary btn-lg" onclick="switchView('view-dispatch')">
+                            <i class="fa-solid fa-map-location-dot"></i> Open Dispatch Center
+                        </button>
+                        <button class="btn btn-secondary btn-lg" onclick="switchView('view-analytics')">
+                            <i class="fa-solid fa-chart-column"></i> View Benchmarks
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How It Works -->
+            <div class="section-container">
+                <div class="section-header">
+                    <h2>How the Engine Works</h2>
+                    <p class="text-muted">A three-stage neuro-symbolic pipeline trained on 50,000+ synthetic city topologies.</p>
+                </div>
+
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-number">01</div>
+                        <div class="step-icon"><i class="fa-solid fa-diagram-project"></i></div>
+                        <h3>Graph Neural Network Encoder</h3>
+                        <p>Delivery coordinates, demand weights, and time windows are encoded into 64-dimensional node embeddings using a Spatial GNN with Graph Attention layers (GAT) and GraphSAGE convolutions.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">02</div>
+                        <div class="step-icon"><i class="fa-solid fa-brain"></i></div>
+                        <h3>Actor-Critic RL Policy</h3>
+                        <p>An Advantage Actor-Critic network makes sub-50ms routing decisions using learned road topology intuition. Invalid actions are dynamically masked to enforce capacity and time window constraints.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">03</div>
+                        <div class="step-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+                        <h3>Neuro-Symbolic 2-Opt Refinement</h3>
+                        <p>A lightning-fast mathematical local search pass untangles any crossed paths from the neural output, combining AI intuition with mathematical proof for provably shorter routes.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Architecture Pipeline -->
+            <div class="section-container">
+                <div class="architecture-pipeline">
+                    <div class="pipeline-step">
+                        <i class="fa-solid fa-city"></i>
+                        <span>City Graph</span>
+                    </div>
+                    <div class="pipeline-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                    <div class="pipeline-step">
+                        <i class="fa-solid fa-diagram-project"></i>
+                        <span>GNN Encoder</span>
+                    </div>
+                    <div class="pipeline-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                    <div class="pipeline-step">
+                        <i class="fa-solid fa-brain"></i>
+                        <span>RL Policy</span>
+                    </div>
+                    <div class="pipeline-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                    <div class="pipeline-step">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <span>2-Opt Refine</span>
+                    </div>
+                    <div class="pipeline-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                    <div class="pipeline-step pipeline-step-final">
+                        <i class="fa-solid fa-route"></i>
+                        <span>Optimized Routes</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fair Benchmark + AI Copilot -->
+            <div class="section-container">
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon text-teal"><i class="fa-solid fa-scale-balanced"></i></div>
+                        <h3>The Fair Benchmark Commitment</h3>
+                        <p>We believe in transparent, un-handicapped comparisons. In the <strong>Dispatch Center</strong>, every routing request runs a live dual-benchmark: Waynex Neural Engine vs. the official <strong>Google OR-Tools</strong> solver.</p>
+                        <p>Both engines receive the exact same inputs — same delivery pins, same fleet, same constraints. We demonstrate that Waynex delivers near-optimal routes at a fraction of the compute cost.</p>
+                        <button class="btn btn-primary mt-3" onclick="switchView('view-dispatch')">Go to Dispatch Center <i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon text-teal"><i class="fa-solid fa-robot"></i></div>
+                        <h3>AI Dispatch Copilot</h3>
+                        <p>An integrated conversational AI assistant powered by <strong>OpenAI GPT</strong> helps dispatchers understand routing decisions. Ask it why a specific truck was assigned, get fuel savings summaries, or request CO₂ impact analysis.</p>
+                        <p>The copilot has full context of the latest benchmark results and can explain trade-offs between the Neural Engine and OR-Tools solutions in plain language.</p>
+                        <small class="text-muted"><i class="fa-solid fa-key"></i> Requires an OpenAI API key. Configure it in Settings <i class="fa-solid fa-gear"></i>.</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 2: DISPATCH CENTER (Map & Routing)    -->
+        <!-- ========================================== -->
+        <section id="view-dispatch" class="view-section">
+            
+            <!-- Top Control Bar -->
+            <div class="dispatch-topbar">
+                <div class="city-cards" id="cityCards" role="tablist" aria-label="Select city hub">
+                    <button class="city-card active" data-city="bengaluru" onclick="selectCity('bengaluru')" role="tab" aria-selected="true">
+                        <span class="city-emoji">🌆</span>
+                        <span class="city-name">Bengaluru</span>
+                    </button>
+                    <button class="city-card" data-city="san_francisco" onclick="selectCity('san_francisco')" role="tab" aria-selected="false">
+                        <span class="city-emoji">🌉</span>
+                        <span class="city-name">San Francisco</span>
+                    </button>
+                    <button class="city-card" data-city="tokyo" onclick="selectCity('tokyo')" role="tab" aria-selected="false">
+                        <span class="city-emoji">🗼</span>
+                        <span class="city-name">Tokyo</span>
+                    </button>
+                </div>
+
+                <div class="dispatch-controls">
+                    <div class="map-layer-toggle">
+                        <button class="toggle-btn active" id="btnViewORTools" onclick="switchMapViewMode('ortools')" aria-label="Show Google OR-Tools routes">
+                            📊 OR-Tools
+                        </button>
+                        <button class="toggle-btn" id="btnViewWaynex" onclick="switchMapViewMode('waynex')" aria-label="Show Waynex Neural routes">
+                            ⚡ Waynex
+                        </button>
+                    </div>
+
+                    <button id="btnRunEngine" class="btn btn-primary" onclick="runBenchmark()" aria-label="Run routing engine">
+                        <i class="fa-solid fa-play"></i> Run Engine
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Layout -->
+            <div class="dispatch-layout">
+                
+                <!-- Left Column: Controls & Feed -->
+                <div class="dispatch-left-col">
+                    
+                    <div class="panel-card">
+                        <h4 class="panel-title"><i class="fa-solid fa-location-dot"></i> Add Delivery Pin</h4>
+                        <div class="search-container">
+                            <div class="input-inline">
+                                <input type="text" id="addressInput" class="form-input" placeholder="Search address..." autocomplete="off" oninput="handleAutocompleteInput(event)" onkeypress="handleGeocodeKey(event)" aria-label="Search for a delivery address">
+                                <button class="btn btn-secondary" onclick="addCustomAddress()" aria-label="Search address"><i class="fa-solid fa-search"></i></button>
+                            </div>
+                            <div class="autocomplete-dropdown hidden" id="autocompleteDropdown"></div>
+                        </div>
+                        <small class="text-muted mt-2" style="display:block;">Or click directly on the map to drop a pin.</small>
+                    </div>
+
+                    <div class="panel-card mt-3">
+                        <h4 class="panel-title flex-between">
+                            <span><i class="fa-solid fa-truck"></i> Fleet Capacity</span>
+                            <span class="badge badge-teal" id="deliveryCount">0</span>
+                        </h4>
+                        <div class="vehicle-list" id="vehicleList">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <div class="panel-card mt-3 flex-fill">
+                        <h4 class="panel-title"><i class="fa-solid fa-satellite-dish"></i> Live Status Feed</h4>
+                        <div class="status-feed" id="statusFeed">
+                            <div class="status-item system">
+                                <div class="status-time">System Ready</div>
+                                <div class="status-msg">Waynex Engine initialized. Select a city hub and run the engine.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Column -->
+                <div class="dispatch-map-col">
+                    <div class="map-container panel-card p-0">
+                        <!-- Compact Perturbation Bar -->
+                        <div class="perturbation-bar">
+                            <span class="perturb-label"><i class="fa-solid fa-triangle-exclamation"></i> Disruption:</span>
+                            <div class="perturb-btn-group">
+                                <button class="btn-perturb" onclick="triggerPerturbation('accident')" aria-label="Simulate accident"><i class="fa-solid fa-car-burst"></i> Accident</button>
+                                <button class="btn-perturb" onclick="triggerPerturbation('rain')" aria-label="Simulate rain"><i class="fa-solid fa-cloud-showers-heavy"></i> Rain</button>
+                                <button class="btn-perturb" onclick="triggerPerturbation('festival')" aria-label="Simulate festival"><i class="fa-solid fa-gopuram"></i> Festival</button>
+                            </div>
+                        </div>
+
+                        <div class="map-click-hint">Tip: Click map to drop pin</div>
+                        <div id="map"></div>
+                        <div class="active-alert-overlay hidden" id="alertOverlay">
+                            <i class="fa-solid fa-shield-cat"></i> <span id="alertMessage">Traffic perturbation active.</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Floating AI Copilot Chat Button -->
+            <button class="fab-copilot" onclick="toggleCopilotChat()" title="Ask AI Copilot" aria-label="Open AI Copilot chat">
+                <i class="fa-solid fa-robot"></i>
+            </button>
+
+            <!-- Floating AI Copilot Chat Window -->
+            <div class="copilot-chat-window hidden" id="copilotChatWindow">
+                <div class="chat-header">
+                    <div class="chat-title"><i class="fa-solid fa-robot text-teal"></i> Waynex AI Copilot</div>
+                    <button class="btn-close" onclick="toggleCopilotChat()" aria-label="Close chat"><i class="fa-solid fa-times"></i></button>
+                </div>
+                <div class="chat-body" id="chatBody">
+                    <div class="chat-msg ai">
+                        <div class="msg-content">Hello! I am your Waynex AI Dispatch Copilot. Ask me about the current route optimization, fuel savings, or why a specific truck was chosen.</div>
+                    </div>
+                </div>
+                <div class="chat-footer">
+                    <div class="preset-chips">
+                        <span class="chip" onclick="sendChatPrompt('Why was Truck 02 assigned the heavy load?')">Why Truck 02?</span>
+                        <span class="chip" onclick="sendChatPrompt('Summarize fuel and CO2 savings.')">Fuel Savings</span>
+                    </div>
+                    <div class="input-inline">
+                        <input type="text" id="chatInput" class="form-input" placeholder="Type a message..." onkeypress="handleChatKey(event)" aria-label="Chat message input">
+                        <button class="btn btn-primary" onclick="submitChat()" aria-label="Send message"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 3: ANALYTICS & AUDIT                  -->
+        <!-- ========================================== -->
+        <section id="view-analytics" class="view-section">
+            <div class="section-container">
+                <div class="view-header flex-between">
+                    <div>
+                        <h2><i class="fa-solid fa-chart-column"></i> Benchmark Audit</h2>
+                        <p class="text-muted">Empirical breakdown of routing efficiency, latency speedup, and environmental impact.</p>
+                    </div>
+                    <div class="job-id-badge hidden" id="benchmarkJobIdBadge">
+                        <span class="text-muted">Job ID:</span> <strong id="benchmarkJobIdText" class="text-teal">--</strong>
+                    </div>
+                </div>
+
+                <div class="analytics-comparison-board mt-4">
+                    <table class="kpi-table">
+                        <thead>
+                            <tr>
+                                <th>Routing Metric</th>
+                                <th>📊 Google OR-Tools Baseline</th>
+                                <th>⚡ Waynex Neural Engine</th>
+                                <th>Efficiency Gain / Delta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Total Distance Travelled</strong></td>
+                                <td id="kpiDistOR">--</td>
+                                <td id="kpiDistWaynex">--</td>
+                                <td id="kpiDistDelta" class="text-emerald fw-bold">--</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Max Shift Duration (Makespan)</strong><br><small class="text-muted">Dictates physical delivery time limit.</small></td>
+                                <td id="kpiSpanOR">--</td>
+                                <td id="kpiSpanWaynex">--</td>
+                                <td id="kpiSpanDelta" class="text-emerald fw-bold">--</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Vehicle Capacity Utilization</strong><br><small class="text-muted">Load divided by active fleet capacity.</small></td>
+                                <td id="kpiUtilOR">--</td>
+                                <td id="kpiUtilWaynex">--</td>
+                                <td id="kpiUtilDelta" class="text-teal fw-bold">--</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Fuel Consumed</strong><br><small class="text-muted">Distance × 0.08 gal/km</small></td>
+                                <td id="kpiFuelOR">--</td>
+                                <td id="kpiFuelWaynex">--</td>
+                                <td id="kpiFuelDelta" class="text-emerald fw-bold">--</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td><strong>Solver Compute Latency</strong><br><small class="text-muted">Algorithmic execution speed.</small></td>
+                                <td id="kpiLatOR">--</td>
+                                <td id="kpiLatWaynex">--</td>
+                                <td id="kpiLatDelta" class="text-teal fw-bold">--</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="analytics-card mt-4">
+                    <h3 class="panel-title text-teal"><i class="fa-solid fa-brain"></i> Why Waynex Neural Route is Optimized</h3>
+                    <ul class="custom-list mt-3">
+                        <li><strong>Sub-50ms Inference Policy:</strong> The GNN-RL neural network evaluates graph candidate hops instantly without recalculating mathematical MILP matrices from scratch, allowing for real-time disruption response.</li>
+                        <li><strong>Spatial GNN Clustering:</strong> Delivery stops are naturally clustered based on road graph topology to minimize cross-town transit time and avoid overlapping fleet territories.</li>
+                        <li><strong>Dynamic Capacity Action Masking:</strong> Heavy payload packages (e.g. >500kg) are dynamically masked to Heavy Diesel trucks, while lighter, clustered parcels go to EV Vans to maximize battery range.</li>
+                        <li><strong>Neuro-Symbolic 2-Opt Refinement:</strong> After the neural network generates its initial route, a mathematical local search pass untangles any crossed edges, guaranteeing provably shorter paths.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Custom JS -->
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,8 +1,31 @@
 # 🚀 WAYNEX — Neuro-Symbolic Fleet Intelligence Platform (DRIFT Phase 2)
 
-**Author:** Sharath  
+**Author:** Sharath Kumar Reddy Kapu  
 **Domain:** Deep Reinforcement Learning (DRL), Graph Neural Networks (GNNs), Combinatorial Vehicle Routing Optimization (VRP)  
-**Live Application:** http://localhost:8000 (Local Control Center)  
+**Research Preprint:** [Zenodo DOI 10.5281/zenodo.21888155](https://zenodo.org/communities/waynex)  
+**Live Platform:** [https://waynex.up.railway.app/](https://waynex.up.railway.app/)  
+
+---
+
+## 📄 Academic Research Paper / Citation
+
+Our research paper is published as an open-access preprint on Zenodo:
+
+> **Title:** *Neuro-Symbolic Fleet Dispatching: Integrating Spatial Graph Neural Networks with Deep Reinforcement Learning for Millisecond Vehicle Routing*  
+> **Author:** Sharath Kumar Reddy Kapu  
+> **Preprint Link:** [https://zenodo.org/communities/waynex](https://zenodo.org/communities/waynex)  
+> **DOI:** `10.5281/zenodo.21888155`
+
+```bibtex
+@preprint{kapu2026waynex,
+  title={Neuro-Symbolic Fleet Dispatching: Integrating Spatial Graph Neural Networks with Deep Reinforcement Learning for Millisecond Vehicle Routing},
+  author={Kapu, Sharath Kumar Reddy},
+  journal={Zenodo Preprint},
+  year={2026},
+  doi={10.5281/zenodo.21888155},
+  url={https://zenodo.org/communities/waynex}
+}
+```
 
 ---
 

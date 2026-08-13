@@ -1,0 +1,91 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+5 0 obj
+<< /Length 2650 >>
+stream
+BT
+/F1 14 Tf
+30 750 Td
+(Neuro-Symbolic Fleet Dispatching: Waynex Engine) Tj
+/F1 9 Tf
+0 -20 Td
+(Author: Sharath Kumar Reddy Kapu | Email: skrkapu@gmail.com) Tj
+0 -13 Td
+(GitHub: https://github.com/mr-sharath/DRIFT/ | Web: https://waynex.up.railway.app/) Tj
+0 -22 Td
+(ABSTRACT:) Tj
+0 -13 Td
+(Capacitated Vehicle Routing Problems (CVRP) in modern urban logistics are traditionally) Tj
+0 -11 Td
+(solved using MILP techniques or metaheuristic local search solvers like Google OR-Tools.) Tj
+0 -11 Td
+(In this paper, we present Waynex, a neuro-symbolic fleet optimization engine combining) Tj
+0 -11 Td
+(Spatial GNN encoder with Advantage Actor-Critic (A2C) DRL policy and 2-Opt refinement.) Tj
+0 -11 Td
+(Across synthetic graphs (N=10 to N=200) and real urban topologies (Bengaluru, SF, Tokyo),) Tj
+0 -11 Td
+(Waynex OPT2 achieves 1.39ms to 116.24ms inference latencies (8.6x to 721x speedup).) Tj
+0 -22 Td
+(1. SYSTEM ARCHITECTURE:) Tj
+0 -13 Td
+(1. Spatial GNN Encoder: Maps 6D node features into 64D latent node embeddings.) Tj
+0 -11 Td
+(2. A2C Policy Network with Action Masking: Dynamically enforces capacity constraints.) Tj
+0 -11 Td
+(3. Symbolic 2-Opt Local Search: Untangles path intersections in sub-millisecond time.) Tj
+0 -22 Td
+(2. STATISTICAL BENCHMARKS (Mean +/- Std Over 5 Random Seeds):) Tj
+0 -13 Td
+(Nodes (N)   OR-Tools Time (ms)   Waynex v2 Time (ms)   OR-Tools Dist (km)   Waynex v2 Dist) Tj
+0 -11 Td
+(10          1003.02 +/- 4.34     1.39 +/- 0.08         74.80 +/- 9.45       68.34 +/- 6.54) Tj
+0 -11 Td
+(20          1001.20 +/- 0.16     3.42 +/- 0.22         99.48 +/- 5.40       102.31 +/- 9.58) Tj
+0 -11 Td
+(50          1001.28 +/- 0.37     10.99 +/- 0.55        199.80 +/- 10.70      257.30 +/- 3.62) Tj
+0 -11 Td
+(100         1002.07 +/- 0.05     31.20 +/- 1.06        291.92 +/- 19.11     534.77 +/- 18.04) Tj
+0 -11 Td
+(200         1004.49 +/- 0.28     116.24 +/- 9.05       445.77 +/- 18.38     1037.28 +/- 48.62) Tj
+0 -18 Td
+(Real Urban Topologies:) Tj
+0 -11 Td
+(- Bengaluru: Waynex OPT2 1.47ms (210.79 km) vs OR-Tools 1005.28ms (213.61 km) -> 683x Speedup) Tj
+0 -11 Td
+(- San Francisco: Waynex OPT2 1.38ms (61.56 km) vs OR-Tools 1000.89ms (61.78 km) -> 725x Speedup) Tj
+0 -11 Td
+(- Tokyo Metro: Waynex OPT2 1.05ms (68.30 km) vs OR-Tools 1000.95ms (82.23 km) -> 953x Speedup) Tj
+0 -22 Td
+(3. REPRODUCIBILITY & HARDWARE SPECS:) Tj
+0 -13 Td
+(Executed on Apple M-series CPU (1 vCPU thread), Python 3.11, PyTorch 2.5.1, OR-Tools 9.8.) Tj
+0 -11 Td
+(Source code & weights: https://github.com/mr-sharath/DRIFT/) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000227 00000 n 
+0000000282 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+3000
+%%EOF

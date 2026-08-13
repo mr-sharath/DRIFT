@@ -1,7 +1,8 @@
 # 📘 Waynex / DRIFT Phase 2: Method of Procedure (MOP) & Technical Documentation
 
-**Author:** Sharath  
+**Author:** Sharath Kumar Reddy Kapu  
 **System:** Waynex AI Routing Engine (Neuro-Symbolic GNN + DRL + 2-Opt)  
+**Research Publication:** [Zenodo DOI 10.5281/zenodo.21888155](https://zenodo.org/communities/waynex)  
 **Version:** Phase 2 Production Candidate  
 **Date:** August 2026  
 

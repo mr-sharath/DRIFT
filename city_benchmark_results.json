@@ -1,0 +1,44 @@
+{
+  "bengaluru": {
+    "or_tools": {
+      "time_ms": 1005.28,
+      "dist_km": 213.61
+    },
+    "waynex_v1": {
+      "time_ms": 2.65,
+      "dist_km": 214.64
+    },
+    "waynex_v2_opt2": {
+      "time_ms": 1.47,
+      "dist_km": 210.79
+    }
+  },
+  "san_francisco": {
+    "or_tools": {
+      "time_ms": 1000.89,
+      "dist_km": 61.78
+    },
+    "waynex_v1": {
+      "time_ms": 1.54,
+      "dist_km": 40.96
+    },
+    "waynex_v2_opt2": {
+      "time_ms": 1.38,
+      "dist_km": 61.56
+    }
+  },
+  "tokyo": {
+    "or_tools": {
+      "time_ms": 1000.95,
+      "dist_km": 82.23
+    },
+    "waynex_v1": {
+      "time_ms": 1.54,
+      "dist_km": 67.46
+    },
+    "waynex_v2_opt2": {
+      "time_ms": 1.05,
+      "dist_km": 68.3
+    }
+  }
+}

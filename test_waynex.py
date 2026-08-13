@@ -20,7 +20,7 @@ class TestWaynexPipeline(unittest.TestCase):
     def test_city_templates(self):
         self.assertIn("bengaluru", CITY_TEMPLATES)
         self.assertIn("san_francisco", CITY_TEMPLATES)
-        self.assertIn("london", CITY_TEMPLATES)
+        self.assertIn("tokyo", CITY_TEMPLATES)
         blr = get_city_template("bengaluru")
         self.assertEqual(len(blr["deliveries"]), 10)
 
